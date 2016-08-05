@@ -6,6 +6,10 @@ import os
 
 
 def plot_all_packets(dirname, filename):
+    """
+    すべてのパケット数のグラフをプロット
+    """
+
     # テキストファイルの読み込み
     f = open(dirname + filename)
     lines = f.readlines()
@@ -24,7 +28,7 @@ def plot_all_packets(dirname, filename):
                 19, 3600 * 20, 3600 * 21, 3600 * 22, 3600 * 23, 3600 * 24], ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"])
     plt.grid(True)
     plt.title('Packet number (' + filename.split(".")[0] + ')')
-    plt.savefig("../graph/all_packets/all_packets_" + filename.split(".")[0] +
+    plt.savefig("graph/all_packets/all_packets_" + filename.split(".")[0] +
                 ".png", format='png', dpi=200)
     # plt.show()
 

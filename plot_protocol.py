@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
-import sys
 import os
 
 
 def plot_protocol(dirname, filename):
+    """
+    プロトコルごとのパケット数のグラフをプロット
+    """
+
     # テキストファイルの読み込み
     f = open(dirname + filename)
     lines = f.readlines()
@@ -33,7 +36,7 @@ def plot_protocol(dirname, filename):
     plt.title('Packet number of each protocol (' +
               filename.split(".")[0] + ')')
     plt.legend()
-    plt.savefig("../graph/protocol/protocol_" + filename.split(".")[0] +
+    plt.savefig("graph/protocol/protocol_" + filename.split(".")[0] +
                 ".png", format='png', dpi=200)
     # plt.show()
 

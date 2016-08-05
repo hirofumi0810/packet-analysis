@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
-import sys
 import os
 
 
 def plot_source_port_ent(dirname, filename):
+    """
+    source ポート番号のエントロピーのグラフをプロット
+    """
+
     # テキストファイルの読み込み
     f = open(dirname + filename)
     lines = f.readlines()
@@ -25,12 +28,16 @@ def plot_source_port_ent(dirname, filename):
                 19, 3600 * 20, 3600 * 21, 3600 * 22, 3600 * 23, 3600 * 24], ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"])
     plt.grid(True)
     plt.title('Entropy of source port (' + filename.split(".")[0] + ')')
-    plt.savefig("../graph/source_port_ent/source_port_ent_" +
+    plt.savefig("graph/source_port_ent/source_port_ent_" +
                 filename.split(".")[0] + ".png", format='png', dpi=200)
     # plt.show()
 
 
 def hist_source_port_ent(dirname, filename):
+    """
+    source ポート番号のエントロピーのヒストグラムをプロット
+    """
+
     # テキストファイルの読み込み
     f = open(dirname + filename)
     lines = f.readlines()
@@ -48,7 +55,7 @@ def hist_source_port_ent(dirname, filename):
     plt.grid(True)
     plt.title('Histgram of entropy of source port (' +
               filename.split(".")[0] + ')')
-    plt.savefig("../graph/hist_source_port_ent/hist_source_port_ent_" +
+    plt.savefig("graph/hist_source_port_ent/hist_source_port_ent_" +
                 filename.split(".")[0] + ".png", format='png', dpi=200)
     # plt.show()
 

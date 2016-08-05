@@ -3,12 +3,20 @@
 import matplotlib.pyplot as plt
 
 precisions, recalls, f_measures = [], [], []
+# 閾値（グリッドサーチ）
 threshold_start = 0
 threshold_end = 10
-threshold = 3
+frame_size = 0.1
+# 閾値（固定）
+threshold = 3.5
 
 
 def detection_grid(filename, annotation):
+    """
+    閾値をグリッドサーチ
+    （source ポート番号のエントロピーで検出）
+    """
+
     # テキストファイルの読み込み（分析データ）
     f = open(filename)
     lines = f.readlines()
@@ -16,30 +24,24 @@ def detection_grid(filename, annotation):
 
     # カンマ区切りで分割
     elapsed_time = [float(line.split(",")[0]) for line in lines]
-    source_ip_ent = [float(line.split(",")[2]) for line in lines]
-    # source_port_ent = [float(line.split(",")[4]) for line in lines]
+    source_port_ent = [float(line.split(",")[4]) for line in lines]
 
     # テキストファイルの読み込み（アノテーションデータ）
     f = open(annotation)
     lines = f.readlines()
     f.close()
     attacked_time = [int(line) for line in lines]
-    # print attacked_time
 
     global precisions, recalls, f_measures
-    global threshold_start
-    global threshold_end
+    global threshold_start, threshold_end
     precisions_day, recalls_day, f_measures_day = [], [], []
 
-    for i in xrange((threshold_end - threshold_start) * 10):
+    for i in range(int((threshold_end - threshold_start) / frame_size)):
         tp, tn, fp, fn = 0, 0, 0, 0
 
-        for (time, ent) in zip(elapsed_time, source_ip_ent):
-            # for (time, ent) in zip(elapsed_time, source_port_ent):
-            # 閾値を超えたら（下回ったら）攻撃と判断
-            if ent > threshold_start + i * 0.1:
-                # if ent < threshold_start + i * 0.1:
-                # print time
+        for (time, ent) in zip(elapsed_time, source_port_ent):
+            # 閾値を下回ったら攻撃と判断
+            if ent < threshold_start + i * 0.1:
                 # 本当に攻撃
                 if time in attacked_time:
                     tp += 1
@@ -70,6 +72,11 @@ def detection_grid(filename, annotation):
 
 
 def detection(filename, annotation):
+    """
+    閾値を超えたらDDoS攻撃と検出し，精度を評価
+    （source ポート番号のエントロピーで検出）
+    """
+
     # テキストファイルの読み込み（分析データ）
     f = open(filename)
     lines = f.readlines()
@@ -77,7 +84,6 @@ def detection(filename, annotation):
 
     # カンマ区切りで分割
     elapsed_time = [float(line.split(",")[0]) for line in lines]
-    # source_ip_ent = [float(line.split(",")[2]) for line in lines]
     source_port_ent = [float(line.split(",")[4]) for line in lines]
 
     # テキストファイルの読み込み（アノテーションデータ）
@@ -85,17 +91,13 @@ def detection(filename, annotation):
     lines = f.readlines()
     f.close()
     attacked_time = [int(line) for line in lines]
-    # print attacked_time
 
     global threshold
     tp, tn, fp, fn = 0, 0, 0, 0
 
-    # for (time, ent) in zip(elapsed_time, source_ip_ent):
     for (time, ent) in zip(elapsed_time, source_port_ent):
-        # 閾値を超えたら（下回ったら）攻撃と判断
-        # if ent > threshold:
+        # 閾値を下回ったら攻撃と判断
         if ent < threshold:
-            # print time
             # 本当に攻撃
             if time in attacked_time:
                 tp += 1
@@ -117,32 +119,45 @@ def detection(filename, annotation):
     f_measure = float(2 * precision * recall) / (precision +
                                                  recall) if (precision + recall) != 0 else 0
 
-    print filename
-    print "precision:%f" % precision
-    print "recall:%f" % recall
-    print "f_measure:%s" % f_measure
+    print(filename)
+    print('precision:{0}'.format(precision))
+    print('recall:{0}'.format(recall))
+    print('f_measure:{0}'.format(f_measure))
 
 
 if __name__ == "__main__":
+    # 攻撃を受けた日
     days = ['05', '09', '13', '17', '18', '20', '28']
 
     for day in days:
         filename = 'analyzed_data/16_04_' + day + '.txt'
         annotation = 'annotation/16_04_' + day + '_annotation.txt'
-        # detection_grid(filename, annotation)
+        detection_grid(filename, annotation)
         detection(filename, annotation)
 
     # グラフプロット
-    # thresholds = [threshold_start + i *
-    #               0.1 for i in xrange(len(f_measures[0]))]
-    # for i in xrange(len(days)):
-    #     plt.plot(thresholds, f_measures[i], label='04/' + days[i])
-    # plt.xlabel('Threshold of entropy', size=15)
-    # plt.ylabel('F-measure', size=15)
-    # plt.grid(True)
-    # plt.legend(loc='upper left')
-    # plt.title('F-measure (Entropy of source IP address)')
-    # plt.savefig("../graph/accuracy/f_measures_ip.png", format='png', dpi=200)
-    # plt.title('F-measure (Entropy of source port number)')
-    # plt.savefig("../graph/accuracy/f_measures_port.png", format='png', dpi=200)
+    thresholds = [threshold_start + i *
+                  frame_size for i in range(len(f_measures[0]))]
+    for i in range(len(days)):
+        plt.plot(thresholds, f_measures[i], label='04/' + days[i])
+    plt.xlabel('Threshold of entropy', size=15)
+    plt.ylabel('F-measure', size=15)
+    plt.grid(True)
+    plt.legend(loc='upper left')
+    plt.title('F-measure (Entropy of source port number)')
+    plt.savefig("graph/accuracy/f_measures_port.png", format='png', dpi=200)
     # plt.show()
+
+    # グリッドサーチの結果に対して，攻撃を受けた全日に対するF値の平均が最高の閾値を求める
+    f_measure_means = []
+    for i in range(len(f_measures[0])):
+        f_measure_sum = 0
+        for j in range(len(f_measures)):
+            f_measure_sum += f_measures[j][i]
+        f_measure_mean = f_measure_sum / len(f_measures)
+        f_measure_means.append(f_measure_mean)
+
+    # F値が最大となる閾値
+    index = f_measure_means.index((max(f_measure_means)))
+    print('f_measure(max):{0}'.format(max(f_measure_means)))
+    print('threshold(max):{0}'.format(index * frame_size))
