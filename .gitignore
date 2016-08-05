@@ -1,2 +1,4 @@
 .DS_Store
-how-to-download.txt
+*.sh
+*.pyc
+*.txt
