@@ -15,7 +15,7 @@ source IPアドレスごとの分散のヒストグラム
 source ポート番号ごとのエントロピーのヒストグラム
 
 ## hist_source_port_var
-source ポート番号ごとの分散
+source ポート番号ごとの分散のヒストグラム
 
 ## protocol
 各プロトコルごとのパケット数の遷移
